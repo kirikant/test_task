@@ -1,0 +1,156 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Crypto task
+  contact:
+    name: kirikant
+    url: https://github.com/kirikant?tab=repositories
+
+servers:
+  - url: http://{host}:{port}
+    description: custom server
+    variables:
+      host:
+        description: host name
+        default: localhost
+      port:
+        description: port value
+        default: "8080"
+
+tags:
+  - name: "Crypto activities"
+    description: "basic functions of crypto currency api"
+
+paths:
+  /crypto/all:
+          
+    get:
+      tags:
+        - "Crypto activities"
+      summary: get all crypto currencies info
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Currencies'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+
+  /crypto/{symbol}:
+  
+    get:
+      tags:
+        - "Crypto activities"
+      summary: get one crypto currency info
+      parameters:
+        - in: path
+          name: symbol
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CryptoCurrency'
+        '404':
+          $ref: '#/components/responses/Bad_Request_symbol'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+    
+  /crypto/notify:        
+    post:
+      tags:
+        - "Crypto activities"
+      summary: adding user request
+      requestBody:
+        $ref: "#/components/requestBodies/CreateOperationCategory"
+      responses:
+        '200':
+          description: OK
+        '404':
+          $ref: '#/components/responses/Bad_Request_validation'
+        '500':
+          $ref: '#/components/responses/Internal_Server_Error'
+
+
+components:
+  requestBodies:
+    CreateOperationCategory:
+      description: body for adding user request
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserRequestBody'
+
+  responses:
+    Bad_Request_symbol:
+      description: Mistake in the name of currency
+      content:
+        text/plain:
+          schema:
+           type: string
+           example: currency ... was not found
+
+    Internal_Server_Error:
+      description: Server problems
+      content:
+        text/plain:
+          schema:
+           type: string
+           example: server was unable to process the request correctly
+
+    Bad_Request_validation:
+      description: Mistake in body request
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+            $ref: '#/components/schemas/ValidationError' 
+  
+  schemas:
+    CryptoCurrency:
+      properties:
+        id:
+          type: integer
+          example: 1
+        symbol:
+          type: string
+          example: "BTC"
+        name:
+          type: string
+          example: "Bitcoin"
+        price:
+          type: number
+          example: 1072.84
+
+
+    Currencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/CryptoCurrency'
+            
+    UserRequestBody:
+          type: object
+          properties:
+            username:
+             type: string
+            symbol:
+             type: string
+             
+    ValidationError:
+      type: object
+      properties:
+        incorrect field:
+          type: string
+          example: username
+        message:
+          type: string
+          example: the username parameter was not given  
+
